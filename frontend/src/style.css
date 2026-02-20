@@ -652,18 +652,69 @@ body {
   border-radius: var(--radius);
   padding: 16px;
   box-shadow: var(--shadow);
-  min-height: 380px;
-  transition: all 0.2s ease;
+  min-height: 420px;
+  transition: all 0.25s ease;
   overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .chart-card:hover {
   box-shadow: var(--shadow-md);
 }
 
+.chart-card-clickable {
+  cursor: pointer;
+}
+
+.chart-card-clickable:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+}
+
+/* Expand hint shown on hover */
+.chart-expand-hint {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(45, 45, 45, 0.75);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 5;
+  backdrop-filter: blur(4px);
+}
+
+.chart-card-clickable:hover .chart-expand-hint {
+  opacity: 1;
+}
+
+/* Make Plotly fill the card */
+.chart-card .js-plotly-plot,
+.chart-card .plotly,
+.chart-card .plot-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.chart-card>.js-plotly-plot {
+  flex: 1;
+  min-height: 340px;
+}
+
 .chart-card-full {
   grid-column: 1 / -1;
-  min-height: 480px;
+  min-height: 500px;
+}
+
+.chart-card-full>.js-plotly-plot {
+  min-height: 420px;
 }
 
 .chart-card-header {
@@ -673,6 +724,7 @@ body {
   margin-bottom: 8px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .chart-card-icon {
@@ -934,6 +986,192 @@ body {
   color: #96704a;
 }
 
+/* ═══════ TOAST NOTIFICATIONS ═══════ */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dark);
+  pointer-events: auto;
+  animation: toast-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 260px;
+  max-width: 420px;
+  border-left: 4px solid var(--accent);
+}
+
+.toast-success {
+  border-left-color: #10b981;
+}
+
+.toast-error {
+  border-left-color: #ef4444;
+}
+
+.toast-icon {
+  font-size: 16px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.toast-success .toast-icon {
+  color: #10b981;
+}
+
+.toast-error .toast-icon {
+  color: #ef4444;
+}
+
+.toast-msg {
+  flex: 1;
+}
+
+.toast-dismiss {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.toast-dismiss:hover {
+  color: var(--text-dark);
+}
+
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ═══════ FULLSCREEN MODAL ═══════ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: modal-fade-in 0.25s ease;
+}
+
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-content {
+  background: var(--bg-card);
+  border-radius: 18px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
+  width: 92vw;
+  height: 88vh;
+  max-width: 1400px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modal-scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.modal-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg-light);
+  color: var(--text-mid);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: var(--bg);
+  color: var(--text-dark);
+  transform: scale(1.1);
+}
+
+.modal-body {
+  flex: 1;
+  padding: 16px;
+  overflow: auto;
+  min-height: 0;
+}
+
+.modal-body .js-plotly-plot,
+.modal-body .plotly,
+.modal-body .plot-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.modal-table-scroll {
+  max-height: none;
+}
+
 /* ═══════ RESPONSIVE ═══════ */
 @media (max-width: 1200px) {
   .content-grid {
@@ -985,5 +1223,15 @@ body {
 
   .content-grid {
     padding: 0 16px 16px;
+  }
+
+  .modal-content {
+    width: 98vw;
+    height: 94vh;
+    border-radius: 12px;
+  }
+
+  .modal-overlay {
+    padding: 8px;
   }
 }

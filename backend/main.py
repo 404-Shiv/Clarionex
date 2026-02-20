@@ -133,14 +133,12 @@ def get_charts():
 
     charts = {}
 
-    # ── Distribution charts ──
     dist = []
     if len(num) > 0:
         dist += ["Histogram", "Box Plot", "Violin Plot", "Density Plot"]
     if dist:
         charts["Distribution"] = dist
 
-    # ── Comparison charts ──
     comp = []
     if len(num) > 0:
         comp.append("Bar Chart")

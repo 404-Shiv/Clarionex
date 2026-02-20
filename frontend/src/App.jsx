@@ -1,7 +1,80 @@
 
-import { useState, useMemo, memo } from "react";
+import { useState, useMemo, memo, useCallback, useEffect, useRef } from "react";
 import axios from "axios";
 import Plot from "react-plotly.js";
+
+/* ─── Toast Notification ─── */
+function Toast({ toasts, onDismiss }) {
+  return (
+    <div className="toast-container">
+      {toasts.map((t) => (
+        <div key={t.id} className={`toast toast-${t.type}`}>
+          <span className="toast-icon">{t.type === "success" ? "✓" : "✕"}</span>
+          <span className="toast-msg">{t.message}</span>
+          <button className="toast-dismiss" onClick={() => onDismiss(t.id)}>×</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─── Fullscreen Modal ─── */
+function FullscreenModal({ chart, onClose }) {
+  if (!chart) return null;
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <span className="modal-title">{chart.name}</span>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          {chart.type === "table" ? (
+            <div className="table-scroll modal-table-scroll">
+              <table className="dash-table">
+                <thead>
+                  <tr>
+                    {chart.columns.map((col, i) => (
+                      <th key={i}>{col}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {chart.rows.map((row, ri) => (
+                    <tr key={ri}>
+                      {row.map((cell, ci) => (
+                        <td key={ci}>
+                          {typeof cell === "number"
+                            ? Number(cell).toLocaleString(undefined, { maximumFractionDigits: 2 })
+                            : String(cell)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <Plot
+              data={chart.data}
+              layout={{
+                ...chart.layout,
+                autosize: true,
+                paper_bgcolor: "rgba(0,0,0,0)",
+                plot_bgcolor: "rgba(245,243,237,0.3)",
+                font: { family: "Inter, sans-serif", color: "#5a5a4a" },
+                margin: { l: 60, r: 40, t: 50, b: 60 },
+              }}
+              config={{ responsive: true, displayModeBar: true, displaylogo: false }}
+              useResizeHandler
+              style={{ width: "100%", height: "100%" }}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const API = "http://localhost:8000";
 
@@ -63,6 +136,21 @@ export default function App() {
   const [activeCategory, setActiveCategory] = useState(null);
   const [generating, setGenerating] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [fullscreenChart, setFullscreenChart] = useState(null);
+  const [toasts, setToasts] = useState([]);
+  const toastIdRef = useRef(0);
+
+  const addToast = useCallback((message, type = "success") => {
+    const id = ++toastIdRef.current;
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000);
+  }, []);
+  const dismissToast = useCallback((id) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const openFullscreen = useCallback((fig) => setFullscreenChart(fig), []);
+  const closeFullscreen = useCallback(() => setFullscreenChart(null), []);
 
   const categories = useMemo(() => Object.keys(available), [available]);
   const totalCharts = useMemo(() => Object.values(available).flat().length, [available]);
@@ -91,14 +179,16 @@ export default function App() {
     setUploading(false);
   };
 
-  /* Single chart — unchanged */
+  /* Single chart */
   const generateChart = async (name) => {
     setGenerating(name);
     try {
       const res = await axios.get(`${API}/generate/${name}`);
       setCharts((prev) => [...prev, { name, ...res.data }]);
+      addToast(`"${name}" generated successfully!`, "success");
     } catch (err) {
       console.error("Chart generation failed:", err);
+      addToast(`Failed to generate "${name}"`, "error");
     }
     setGenerating("");
   };
@@ -114,8 +204,10 @@ export default function App() {
         .filter((name) => results[name] && !results[name].error)
         .map((name) => ({ name, ...results[name] }));
       setCharts((prev) => [...prev, ...newCharts]);
+      addToast(`${newCharts.length} chart${newCharts.length !== 1 ? "s" : ""} generated successfully!`, "success");
     } catch (err) {
       console.error("Batch generation failed:", err);
+      addToast("Batch generation failed. Try fewer charts.", "error");
     }
     setGenerating("");
     setLoading(false);
@@ -326,11 +418,13 @@ export default function App() {
                 {charts.map((fig, index) => (
                   <div
                     key={index}
-                    className={`chart-card ${["Scatter Matrix", "Correlation Heatmap", "Gantt Chart", "Sparklines",
+                    className={`chart-card chart-card-clickable ${["Scatter Matrix", "Correlation Heatmap", "Gantt Chart", "Sparklines",
                       "Density Heatmap", "Symbol Map", "Density Map", "Filled Map"].includes(fig.name)
                       ? "chart-card-full" : ""
                       }`}
+                    onClick={() => openFullscreen(fig)}
                   >
+                    <div className="chart-expand-hint">⛶ Click to expand</div>
                     <div className="chart-card-header">
                       <span className="chart-card-icon">{chartIcons[fig.name] || "--"}</span>
                       <span className="chart-card-title">{fig.name}</span>
@@ -474,6 +568,12 @@ export default function App() {
           </div>
         </div>
       </div>
+
+      {/* Fullscreen Modal */}
+      <FullscreenModal chart={fullscreenChart} onClose={closeFullscreen} />
+
+      {/* Toast Notifications */}
+      <Toast toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 }
