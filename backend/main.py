@@ -221,9 +221,7 @@ def generate_chart(chart_name: str):
     cat_cols = metadata["categorical"]
     date_cols = metadata.get("date_columns", [])
 
-    # ───────────────────────────────
-    #  DISTRIBUTION
-    # ───────────────────────────────
+    
 
     if chart_name == "Histogram":
         col = num_cols[0]
