@@ -9,7 +9,7 @@ The user uploads a dataset and the system cleans the data, understands its struc
 ## What This Project Does
 
 Clarionex simplifies data analysis.
-sdxfcgvghop';lkujwsrdfgiuoiu
+sdxfcgvghop';lkujwsrdfgi
 Instead of manually selecting columns and building charts, the system automatically prepares the data and suggests useful visualizations. Clicking a chart instantly adds it to the dashboard.
 
 ---
