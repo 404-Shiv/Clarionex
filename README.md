@@ -13,7 +13,7 @@ Clarionex simplifies data analysis.
 Instead of manually selecting columns and building charts, the system automatically prepares the data and suggests useful visualizations. Clicking a chart instantly adds it to the dashboard.
 
 ---
-aewsth
+
 ## Features
 
 * Upload dataset (CSV)
