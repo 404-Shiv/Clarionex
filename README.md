@@ -139,4 +139,4 @@ Open the local URL shown in the terminal.
 
 ## Summary
 
-Clarionex helps users quickly understand their data by automatically cleaning it and generating visual dashboards with simple clicks.
+Clarionex helps users quickly understand their data by automatically cleaning it and generating visual dashboards with simple clicks..
